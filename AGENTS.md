@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Rules
+- Rudiment data lives only in src/data/rudiments.ts; unverified sticking/notation stays null with dataStatus "pending" (never invent).
+- Per-user practice state is stored client-side via src/lib/practice-store.ts (no backend yet).
