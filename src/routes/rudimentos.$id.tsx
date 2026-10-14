@@ -94,7 +94,7 @@ function Detail() {
       <section aria-labelledby="links-h" className="mt-6 grid gap-3 sm:grid-cols-2">
         <h2 id="links-h" className="sr-only">Links externos</h2>
         <ExtLink href={r.referenceUrl} title="Referência oficial PAS" sub="Vic Firth · 40 Essential Rudiments" />
-        <ExtLink href={r.learningResourceUrl} title="Recurso de estudo" sub="drumrudiments.com" />
+        <ExtLink href={r.learningResourceUrl} title="Recurso de estudo" sub={`drumrudiments.com · ${r.name}`} />
       </section>
     </div>
   );
