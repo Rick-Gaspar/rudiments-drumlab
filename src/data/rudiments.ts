@@ -75,6 +75,53 @@ const NAMES: string[] = [
   "Triple Ratamacue",
 ];
 
+/**
+ * Verified drumrudiments.com lesson slugs, index-aligned with NAMES.
+ * Some slugs follow the site's own spelling (e.g. "flag-drag", "double-ratamatcue").
+ */
+const STUDY_SLUGS: string[] = [
+  "single-stroke-roll",
+  "single-stroke-four",
+  "single-stroke-seven",
+  "multiple-bounce-roll",
+  "triple-stroke-roll",
+  "double-stroke-open-roll",
+  "five-stroke-roll",
+  "six-stroke-roll",
+  "seven-stroke-roll",
+  "nine-stroke-roll",
+  "ten-stroke-roll",
+  "eleven-stroke-roll",
+  "thirteen-stroke-roll",
+  "fifteen-stroke-roll",
+  "seventeen-stroke-roll",
+  "single-paradiddle",
+  "double-paradiddle",
+  "triple-paradiddle",
+  "single-paradiddle-diddle",
+  "flam",
+  "flam-accent",
+  "flam-tap",
+  "flamacue",
+  "flam-paradiddle",
+  "single-flammed-mill",
+  "flam-paradiddle-diddle",
+  "pataflafla",
+  "swiss-army-triplet",
+  "inverted-flam-tap",
+  "flag-drag",
+  "drag",
+  "single-drag-tap",
+  "double-drag-tap",
+  "lesson-25",
+  "single-dragadiddle",
+  "drag-paradiddle-1",
+  "drag-paradiddle-2",
+  "single-ratamacue",
+  "double-ratamatcue",
+  "triple-ratamacue",
+];
+
 function familyFor(order: number): RudimentFamily {
   if (order <= 15) return "rolls";
   if (order <= 19) return "diddles";
@@ -97,7 +144,7 @@ export const RUDIMENTS: readonly Rudiment[] = NAMES.map((name, i) => ({
   name,
   family: familyFor(i + 1),
   referenceUrl: PAS_REFERENCE_URL,
-  learningResourceUrl: LEARNING_RESOURCE_URL,
+  learningResourceUrl: `https://drumrudiments.com/drum-rudiments/drum-lessons/${STUDY_SLUGS[i]}-drum-rudiment.htm`,
   sticking: null,
   notation: null,
   dataStatus: "pending",
