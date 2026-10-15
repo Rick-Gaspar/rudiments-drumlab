@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ProgressoRouteImport } from './routes/progresso'
 import { Route as RudimentosIdRouteImport } from './routes/rudimentos.$id'
+import { Route as RudimentosIdPraticarRouteImport } from './routes/rudimentos_.$id.praticar'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const RudimentosIdRoute = RudimentosIdRouteImport.update({
   path: '/rudimentos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RudimentosIdPraticarRoute = RudimentosIdPraticarRouteImport.update({
+  id: '/rudimentos_/$id/praticar',
+  path: '/rudimentos/$id/praticar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/progresso': typeof ProgressoRoute
   '/rudimentos/$id': typeof RudimentosIdRoute
+  '/rudimentos/$id/praticar': typeof RudimentosIdPraticarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/progresso': typeof ProgressoRoute
   '/rudimentos/$id': typeof RudimentosIdRoute
+  '/rudimentos/$id/praticar': typeof RudimentosIdPraticarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,30 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/progresso': typeof ProgressoRoute
   '/rudimentos/$id': typeof RudimentosIdRoute
+  '/rudimentos_/$id/praticar': typeof RudimentosIdPraticarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/configuracoes' | '/progresso' | '/rudimentos/$id'
+  fullPaths:
+    | '/'
+    | '/configuracoes'
+    | '/progresso'
+    | '/rudimentos/$id'
+    | '/rudimentos/$id/praticar'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/configuracoes' | '/progresso' | '/rudimentos/$id'
-  id: '__root__' | '/' | '/configuracoes' | '/progresso' | '/rudimentos/$id'
+  to:
+    | '/'
+    | '/configuracoes'
+    | '/progresso'
+    | '/rudimentos/$id'
+    | '/rudimentos/$id/praticar'
+  id:
+    | '__root__'
+    | '/'
+    | '/configuracoes'
+    | '/progresso'
+    | '/rudimentos/$id'
+    | '/rudimentos_/$id/praticar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +92,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   ProgressoRoute: typeof ProgressoRoute
   RudimentosIdRoute: typeof RudimentosIdRoute
+  RudimentosIdPraticarRoute: typeof RudimentosIdPraticarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RudimentosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rudimentos_/$id/praticar': {
+      id: '/rudimentos_/$id/praticar'
+      path: '/rudimentos/$id/praticar'
+      fullPath: '/rudimentos/$id/praticar'
+      preLoaderRoute: typeof RudimentosIdPraticarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   ProgressoRoute: ProgressoRoute,
   RudimentosIdRoute: RudimentosIdRoute,
+  RudimentosIdPraticarRoute: RudimentosIdPraticarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

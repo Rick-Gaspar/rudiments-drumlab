@@ -5,10 +5,34 @@
  *  - diddles: #16–19 (Diddle Rudiments / Paradiddles)
  *  - flams: #20–30 (Flam Rudiments)
  *  - drags: #31–40 (Drag Rudiments)
- * Sticking and notation are intentionally null until verified (Phase 2).
+ * Sticking/notation are filled only for patterns in VERIFIED; all others stay null + pending.
  */
 export type RudimentFamily = "rolls" | "diddles" | "flams" | "drags";
 export type VerificationStatus = "verified" | "pending";
+
+export type Hand = "R" | "L";
+
+/** One rhythmic event of a rudiment cycle. `beats` is the length in quarter notes. */
+export interface RhythmicEvent {
+  hand: Hand;
+  /** VexFlow duration code ("8" | "16"). */
+  duration: "8" | "16";
+  beats: number;
+  accent?: boolean;
+  /** Grace-note hand for flams (played just before the main stroke). */
+  flamGrace?: Hand;
+}
+
+export interface NotationData {
+  timeSignature: "2/4" | "4/4" | "6/8";
+  /** Number of measures in one cycle. */
+  measures: number;
+  /** Events per beam group (e.g. 4 sixteenths or 3 eighths). */
+  beamGroup: number;
+  events: RhythmicEvent[];
+  /** Where the transcription was checked. */
+  source: string;
+}
 
 export interface Rudiment {
   id: string;
@@ -18,7 +42,7 @@ export interface Rudiment {
   referenceUrl: string;
   learningResourceUrl: string;
   sticking: string | null;
-  notation: string | null;
+  notation: NotationData | null;
   dataStatus: VerificationStatus;
 }
 
@@ -122,6 +146,36 @@ const STUDY_SLUGS: string[] = [
   "triple-ratamacue",
 ];
 
+const PAS_SHEET = "PAS International Drum Rudiments (40 Essential), standard notation";
+
+function ev(seq: string, duration: "8" | "16"): RhythmicEvent[] {
+  // seq tokens: "R", "L", ">R" (accent), "lR" (flam with left grace), ">lR"
+  const beats = duration === "16" ? 0.25 : 0.5;
+  return seq.split(" ").map((t) => {
+    const accent = t.startsWith(">");
+    const core = accent ? t.slice(1) : t;
+    const hand = core[core.length - 1] as Hand;
+    const grace = core.length === 2 ? (core[0].toUpperCase() as Hand) : undefined;
+    return { hand, duration, beats, ...(accent ? { accent } : {}), ...(grace ? { flamGrace: grace } : {}) };
+  });
+}
+
+/** Verified patterns only. Rudiments absent here stay "pending". */
+const VERIFIED: Record<string, Omit<NotationData, "source">> = {
+  "single-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R L R L R L R L", "16") },
+  "double-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R R L L R R L L", "16") },
+  "single-paradiddle": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">R L R R >L R L L", "16") },
+  "triple-paradiddle": { timeSignature: "4/4", measures: 1, beamGroup: 4, events: ev(">R L R L R L R R >L R L R L R L L", "16") },
+  flam: { timeSignature: "2/4", measures: 1, beamGroup: 2, events: ev("lR rL lR rL", "8") },
+  "flam-accent": { timeSignature: "6/8", measures: 1, beamGroup: 3, events: ev(">lR L R >rL R L", "8") },
+  "flam-tap": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">lR R >rL L >lR R >rL L", "16") },
+  "flam-paradiddle": { timeSignature: "4/4", measures: 1, beamGroup: 4, events: ev(">lR L R R >rL R L L >lR L R R >rL R L L", "16") },
+};
+
+export function stickingOf(n: NotationData) {
+  return n.events.map((e) => (e.flamGrace ? e.flamGrace.toLowerCase() : "") + e.hand).join(" ");
+}
+
 function familyFor(order: number): RudimentFamily {
   if (order <= 15) return "rolls";
   if (order <= 19) return "diddles";
@@ -138,17 +192,22 @@ function slugify(name: string) {
     .replace(/^-|-$/g, "");
 }
 
-export const RUDIMENTS: readonly Rudiment[] = NAMES.map((name, i) => ({
-  id: slugify(name),
+export const RUDIMENTS: readonly Rudiment[] = NAMES.map((name, i) => {
+  const id = slugify(name);
+  const v = VERIFIED[id];
+  const notation: NotationData | null = v ? { ...v, source: PAS_SHEET } : null;
+  return {
+  id,
   order: i + 1,
   name,
   family: familyFor(i + 1),
   referenceUrl: PAS_REFERENCE_URL,
   learningResourceUrl: `https://drumrudiments.com/drum-rudiments/drum-lessons/${STUDY_SLUGS[i]}-drum-rudiment.htm`,
-  sticking: null,
-  notation: null,
-  dataStatus: "pending",
-}));
+  sticking: notation ? stickingOf(notation) : null,
+  notation,
+  dataStatus: notation ? "verified" : "pending",
+  } satisfies Rudiment;
+});
 
 export function getRudiment(id: string) {
   return RUDIMENTS.find((r) => r.id === id);
