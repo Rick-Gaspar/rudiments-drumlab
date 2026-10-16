@@ -85,8 +85,8 @@ function PracticeArea({ r, notation }: { r: Rudiment; notation: NotationData }) 
   };
 
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_380px]">
-      <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+    <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="min-w-0 space-y-6 lg:sticky lg:top-6 lg:self-start">
         <section aria-labelledby="nota-h" className="rounded-2xl border bg-card p-5">
           <div className="flex items-center justify-between">
             <h2 id="nota-h" className="font-semibold">Partitura</h2>
@@ -116,7 +116,7 @@ function PracticeArea({ r, notation }: { r: Rudiment; notation: NotationData }) 
         <DemoPanel {...demo} />
       </div>
 
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         <section aria-labelledby="timer-h" className="rounded-2xl border bg-card p-5">
           <h2 id="timer-h" className="font-semibold">Sessão</h2>
           <p className="mt-2 text-center font-mono text-5xl font-bold" aria-live="off">{formatDuration(timer.elapsedMs)}</p>
