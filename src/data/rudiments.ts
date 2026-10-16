@@ -155,7 +155,7 @@ function ev(seq: string, duration: "8" | "16"): RhythmicEvent[] {
     const accent = t.startsWith(">");
     const core = accent ? t.slice(1) : t;
     const hand = core[core.length - 1] as Hand;
-    const grace = core.length === 2 ? (core[0].toUpperCase() as Hand) : undefined;
+    const grace = core.length === 2 ? (core[0]!.toUpperCase() as Hand) : undefined;
     return { hand, duration, beats, ...(accent ? { accent } : {}), ...(grace ? { flamGrace: grace } : {}) };
   });
 }

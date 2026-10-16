@@ -15,7 +15,7 @@ export function NotationView({ notation, className }: { notation: NotationData; 
         const el = ref.current;
         if (!el || cancelled) return;
         el.innerHTML = "";
-        const [num, den] = notation.timeSignature.split("/").map(Number);
+        const [num = 4, den = 4] = notation.timeSignature.split("/").map(Number);
         const evs = notation.events;
         const width = Math.max(320, evs.length * 46 + 130);
         const renderer = new VF.Renderer(el, VF.Renderer.Backends.SVG);

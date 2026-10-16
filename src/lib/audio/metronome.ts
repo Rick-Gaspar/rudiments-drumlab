@@ -127,7 +127,7 @@ export class Metronome {
     const step = () => {
       const now = c.currentTime;
       let last: Pulse | undefined;
-      while (this.queue.length && this.queue[0].time <= now) last = this.queue.shift();
+      while (this.queue.length && this.queue[0]!.time <= now) last = this.queue.shift();
       if (last) this.set({ beat: last.beat, countingIn: last.countIn });
       if (this.snap.state === "running") this.raf = requestAnimationFrame(step);
     };
@@ -164,11 +164,11 @@ export class Metronome {
 export class TapTempo {
   private taps: number[] = [];
   tap(now = performance.now()): number | null {
-    if (this.taps.length && now - this.taps[this.taps.length - 1] > 2000) this.taps = [];
+    if (this.taps.length && now - this.taps[this.taps.length - 1]! > 2000) this.taps = [];
     this.taps.push(now);
     if (this.taps.length > 6) this.taps.shift();
     if (this.taps.length < 2) return null;
-    const iv = (this.taps[this.taps.length - 1] - this.taps[0]) / (this.taps.length - 1);
+    const iv = (this.taps[this.taps.length - 1]! - this.taps[0]!) / (this.taps.length - 1);
     return clampBpm(60000 / iv);
   }
 }

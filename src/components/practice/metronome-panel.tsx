@@ -73,7 +73,7 @@ export function MetronomePanel({ m, snap }: ReturnType<typeof useMetronome>) {
           <Plus className="mx-auto h-5 w-5" />
         </button>
       </div>
-      <Slider className="mt-4" min={BPM_MIN} max={BPM_MAX} step={1} value={[s.bpm]} onValueChange={([v]) => m.update({ bpm: v })} aria-label="BPM" />
+      <Slider className="mt-4" min={BPM_MIN} max={BPM_MAX} step={1} value={[s.bpm]} onValueChange={([v]) => v !== undefined && m.update({ bpm: v })} aria-label="BPM" />
 
       <div className="mt-5 grid grid-cols-3 gap-2">
         {state === "running" ? (
@@ -138,7 +138,7 @@ export function MetronomePanel({ m, snap }: ReturnType<typeof useMetronome>) {
         </label>
         <div>
           <span className="text-muted-foreground">Volume</span>
-          <Slider className="mt-3" min={0} max={100} value={[Math.round(s.volume * 100)]} onValueChange={([v]) => m.update({ volume: v / 100 })} aria-label="Volume do metrônomo" />
+          <Slider className="mt-3" min={0} max={100} value={[Math.round(s.volume * 100)]} onValueChange={([v = 0]) => m.update({ volume: v / 100 })} aria-label="Volume do metrônomo" />
         </div>
       </div>
     </section>

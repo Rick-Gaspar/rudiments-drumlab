@@ -63,7 +63,7 @@ export class DemoPlayer {
     this.set({ state: "running", error: null });
     const step = () => {
       let last;
-      while (this.queue.length && this.queue[0].time <= c.currentTime) last = this.queue.shift();
+      while (this.queue.length && this.queue[0]!.time <= c.currentTime) last = this.queue.shift();
       if (last) this.set({ index: last.index });
       if (this.snap.state === "running") this.raf = requestAnimationFrame(step);
     };
@@ -75,7 +75,7 @@ export class DemoPlayer {
     const quarter = 60 / this.snap.bpm;
     while (this.nextTime < until) {
       const idx = this.i % evs.length;
-      const e = evs[idx];
+      const e = evs[idx]!;
       const pan = e.hand === "R" ? 0.25 : -0.25;
       if (e.flamGrace) scheduleStroke(c, this.bus!.node, Math.max(c.currentTime, this.nextTime - FLAM_OFFSET), 0.3, -pan);
       scheduleStroke(c, this.bus!.node, this.nextTime, e.accent ? 1 : 0.55, pan);
