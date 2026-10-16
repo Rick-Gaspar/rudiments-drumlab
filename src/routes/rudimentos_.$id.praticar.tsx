@@ -8,6 +8,7 @@ import { MetronomePanel, useMetronome } from "@/components/practice/metronome-pa
 import { DemoPanel, useDemo } from "@/components/practice/demo-panel";
 import { formatDuration, useSessionTimer } from "@/lib/use-session-timer";
 import { cn } from "@/lib/utils";
+import { saveSession, MIN_SESSION_MS } from "@/lib/practice-store";
 import type { NotationData, Rudiment } from "@/data/rudiments";
 
 export const Route = createFileRoute("/rudimentos_/$id/praticar")({
@@ -61,7 +62,7 @@ function PracticeArea({ r, notation }: { r: Rudiment; notation: NotationData }) 
   const metro = useMetronome();
   const demo = useDemo(notation);
   const timer = useSessionTimer();
-  const [finished, setFinished] = useState<{ rudimentId: string; durationMs: number } | null>(null);
+  const [finished, setFinished] = useState<{ durationMs: number; saved: boolean } | null>(null);
 
   // Space toggles the metronome (when not typing).
   useEffect(() => {
@@ -81,7 +82,9 @@ function PracticeArea({ r, notation }: { r: Rudiment; notation: NotationData }) 
     timer.pause();
     metro.m.stop();
     demo.p.stop();
-    setFinished({ rudimentId: r.id, durationMs });
+    const saved = saveSession({ rudimentId: r.id, durationMs, bpm: metro.snap.settings.bpm });
+    if (saved) timer.reset();
+    setFinished({ durationMs, saved: !!saved });
   };
 
   return (
@@ -139,8 +142,14 @@ function PracticeArea({ r, notation }: { r: Rudiment; notation: NotationData }) 
           </button>
           {finished && (
             <div role="status" className="mt-3 rounded-lg bg-muted p-3 text-sm">
-              Sessão de <strong>{formatDuration(finished.durationMs)}</strong> pronta para registro.
-              <span className="block text-xs text-muted-foreground">O salvamento do progresso chega na próxima fase — nada foi salvo ainda.</span>
+              {finished.saved ? (
+                <>
+                  Sessão de <strong>{formatDuration(finished.durationMs)}</strong> salva a {metro.snap.settings.bpm} BPM.{" "}
+                  <Link to="/progresso" className="text-primary underline">Ver progresso</Link>
+                </>
+              ) : (
+                <>Sessão muito curta (menos de {MIN_SESSION_MS / 1000}s) — não foi salva.</>
+              )}
             </div>
           )}
         </section>
