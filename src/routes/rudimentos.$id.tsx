@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Clock } from "lucide-react";
+import { ArrowLeft, ExternalLink, Clock, Play } from "lucide-react";
+import { NotationView } from "@/components/notation-view";
 import { getRudiment, FAMILY_LABELS } from "@/data/rudiments";
 import { useProgress, statusOf, setStatus, STATUS_LABELS, type LearningStatus } from "@/lib/practice-store";
 import { FamilyBadge } from "@/components/rudiment-badges";
@@ -82,13 +83,27 @@ function Detail() {
 
       <section aria-labelledby="data-h" className="mt-6 rounded-2xl border bg-card p-6">
         <h2 id="data-h" className="font-semibold">Manulação e notação</h2>
-        <div className="mt-3 flex items-start gap-3 rounded-lg bg-muted p-4 text-sm text-muted-foreground">
-          <Clock className="mt-0.5 h-4 w-4 shrink-0 text-status-learning" aria-hidden />
-          <p>
-            Pendente de validação. A manulação e a partitura serão adicionadas após verificação com a fonte oficial.
-            Consulte a referência abaixo enquanto isso.
-          </p>
-        </div>
+        {r.notation ? (
+          <>
+            <NotationView notation={r.notation} className="mt-4" />
+            <p className="mt-3 font-mono text-sm">{r.sticking}</p>
+            <Link
+              to="/rudimentos/$id/praticar"
+              params={{ id: r.id }}
+              className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-primary-foreground"
+            >
+              <Play className="h-5 w-5" /> Praticar agora
+            </Link>
+          </>
+        ) : (
+          <div className="mt-3 flex items-start gap-3 rounded-lg bg-muted p-4 text-sm text-muted-foreground">
+            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-status-learning" aria-hidden />
+            <p>
+              Pendente de validação. A manulação e a partitura serão adicionadas após verificação com a fonte oficial.
+              A prática guiada fica desativada até lá.
+            </p>
+          </div>
+        )}
       </section>
 
       <section aria-labelledby="links-h" className="mt-6 grid gap-3 sm:grid-cols-2">
