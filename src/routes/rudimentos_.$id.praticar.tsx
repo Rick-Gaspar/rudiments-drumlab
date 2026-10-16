@@ -85,7 +85,7 @@ function PracticeArea({ r, notation }: { r: Rudiment; notation: NotationData }) 
   };
 
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_380px]">
+    <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
       <div className="min-w-0 space-y-6 lg:sticky lg:top-6 lg:self-start">
         <section aria-labelledby="nota-h" className="rounded-2xl border bg-card p-5">
           <div className="flex items-center justify-between">
