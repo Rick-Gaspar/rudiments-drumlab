@@ -9,7 +9,7 @@ describe("practice sessions", () => {
   });
   it("keeps practiced status", () => {
     const p = { flam: { status: "practiced" as const, personalBestBpm: 90, lastPracticedAt: null } };
-    expect(applySession(p, s({ bpm: 70 })).flam).toMatchObject({ status: "practiced", personalBestBpm: 90 });
+    expect(applySession(p, s({ bpm: 70 }))["flam"]).toMatchObject({ status: "practiced", personalBestBpm: 90 });
   });
   it("raises best BPM", () => {
     expect(applySession({}, s({ bpm: 80 }))["flam"]!.personalBestBpm).toBe(80);
