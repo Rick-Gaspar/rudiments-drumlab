@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { RUDIMENTS, FAMILY_LABELS, type RudimentFamily } from "@/data/rudiments";
 import { useProgress, statusOf } from "@/lib/practice-store";
+import { useSessions } from "@/lib/sessions/store";
 import { FamilyBadge, StatusDot } from "@/components/rudiment-badges";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ function Library() {
   const [family, setFamily] = useState<FamilyFilter>("all");
   const [sort, setSort] = useState<SortKey>("order");
   const progress = useProgress();
+  const sessions = useSessions();
+  const countOf = (id: string) => sessions.filter((s) => s.rudimentId === id).length;
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -41,7 +44,7 @@ function Library() {
     return [...r].sort((a, b) => (sort === "order" ? a.order - b.order : a.name.localeCompare(b.name, "en")));
   }, [query, family, sort]);
 
-  const practiced = RUDIMENTS.filter((r) => statusOf(progress, r.id) === "practiced").length;
+  const practiced = RUDIMENTS.filter((r) => statusOf(progress, r.id, countOf(r.id)) === "practiced").length;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
@@ -119,7 +122,7 @@ function Library() {
                   <span className="font-display font-semibold leading-tight">{r.name}</span>
                   <span className="flex flex-wrap items-center gap-3">
                     <FamilyBadge family={r.family} />
-                    <StatusDot status={statusOf(progress, r.id)} />
+                    <StatusDot status={statusOf(progress, r.id, countOf(r.id))} />
                   </span>
                 </span>
               </Link>
