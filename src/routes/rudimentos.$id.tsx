@@ -2,7 +2,9 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink, Clock, Play } from "lucide-react";
 import { NotationView } from "@/components/notation-view";
 import { getRudiment, FAMILY_LABELS } from "@/data/rudiments";
-import { useSessions, totalMs, useProgress, statusOf, setStatus, STATUS_LABELS, type LearningStatus } from "@/lib/practice-store";
+import { useProgress, statusOf, setStatus, STATUS_LABELS, type LearningStatus } from "@/lib/practice-store";
+import { useSessions } from "@/lib/sessions/store";
+import { rudimentStats } from "@/lib/sessions/model";
 import { FamilyBadge } from "@/components/rudiment-badges";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/use-session-timer";
@@ -44,9 +46,10 @@ const statuses: LearningStatus[] = ["not_started", "learning", "practiced"];
 function Detail() {
   const { rudiment: r } = Route.useLoaderData();
   const progress = useProgress();
-  const current = statusOf(progress, r.id);
-  const sessions = useSessions().filter((s) => s.rudimentId === r.id);
-  const p = progress[r.id];
+  const all = useSessions();
+  const sessions = all.filter((s) => s.rudimentId === r.id);
+  const st = rudimentStats(all, r.id);
+  const current = statusOf(progress, r.id, st.count);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 md:px-8 md:py-12">
@@ -81,27 +84,30 @@ function Detail() {
             </button>
           ))}
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">Salvo apenas neste dispositivo.</p>
+        <p className="mt-3 text-xs text-muted-foreground">Salvo apenas neste dispositivo. Com sessões salvas, o status é pelo menos "Aprendendo".</p>
       </section>
 
       <section aria-labelledby="hist-h" className="mt-6 rounded-2xl border bg-card p-6">
         <h2 id="hist-h" className="font-semibold">Seu histórico</h2>
-        <dl className="mt-4 grid grid-cols-3 gap-3 text-center">
-          <Stat label="Tempo total" value={formatDuration(totalMs(sessions))} />
-          <Stat label="Sessões" value={String(sessions.length)} />
-          <Stat label="Maior BPM" value={p?.personalBestBpm ? String(p.personalBestBpm) : "—"} />
+        <dl className="mt-4 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+          <Stat label="Tempo total" value={formatDuration(st.totalMs)} />
+          <Stat label="Sessões" value={String(st.count)} />
+          <Stat label="Recorde BPM limpo" value={st.bestCleanBpm ? String(st.bestCleanBpm) : "—"} />
+          <Stat label="Última prática" value={st.lastPracticedAt ? new Date(st.lastPracticedAt).toLocaleDateString("pt-BR") : "—"} />
         </dl>
+        <p className="mt-2 text-xs text-muted-foreground">BPM limpo é informado por você ao salvar a sessão.</p>
         {sessions.length > 0 && (
           <ul className="mt-4 divide-y text-sm">
             {sessions.slice(0, 5).map((s) => (
               <li key={s.id} className="flex justify-between py-2">
-                <span className="text-muted-foreground">{new Date(s.endedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</span>
-                <span className="font-mono">{formatDuration(s.durationMs)} · {s.bpm} BPM</span>
+                <span className="text-muted-foreground">{new Date(s.startedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</span>
+                <span className="font-mono">{formatDuration(s.durationMs)} · {s.finalBpm} BPM</span>
               </li>
             ))}
           </ul>
         )}
       </section>
+
 
       <section aria-labelledby="data-h" className="mt-6 rounded-2xl border bg-card p-6">
         <h2 id="data-h" className="font-semibold">Manulação e notação</h2>
