@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { formatDate, formatDateTime } from "@/lib/format-date";
 import { ArrowLeft, ExternalLink, Clock, Play } from "lucide-react";
 import { NotationView } from "@/components/notation-view";
 import { getRudiment, FAMILY_LABELS } from "@/data/rudiments";
@@ -93,14 +94,14 @@ function Detail() {
           <Stat label="Tempo total" value={formatDuration(st.totalMs)} />
           <Stat label="Sessões" value={String(st.count)} />
           <Stat label="Recorde BPM limpo" value={st.bestCleanBpm ? String(st.bestCleanBpm) : "—"} />
-          <Stat label="Última prática" value={st.lastPracticedAt ? new Date(st.lastPracticedAt).toLocaleDateString("pt-BR") : "—"} />
+          <Stat label="Última prática" value={st.lastPracticedAt ? formatDate(st.lastPracticedAt) : "—"} />
         </dl>
         <p className="mt-2 text-xs text-muted-foreground">BPM limpo é informado por você ao salvar a sessão.</p>
         {sessions.length > 0 && (
           <ul className="mt-4 divide-y text-sm">
             {sessions.slice(0, 5).map((s) => (
               <li key={s.id} className="flex justify-between py-2">
-                <span className="text-muted-foreground">{new Date(s.startedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</span>
+                <span className="text-muted-foreground">{formatDateTime(s.startedAt)}</span>
                 <span className="font-mono">{formatDuration(s.durationMs)} · {s.finalBpm} BPM</span>
               </li>
             ))}

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { Download, Upload } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { formatDateTime, formatDayMonth } from "@/lib/format-date";
 import { RUDIMENTS, getRudiment } from "@/data/rudiments";
 import { statusOf, useProgress } from "@/lib/practice-store";
 import { FamilyBadge, StatusDot } from "@/components/rudiment-badges";
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/progresso")({
 });
 
 const chartConfig = { minutes: { label: "Minutos", color: "var(--primary)" } } satisfies ChartConfig;
-const fmtDate = (iso: string) => new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+const fmtDate = formatDateTime;
 const nameOf = (id: string) => getRudiment(id)?.name ?? id;
 const validIds = new Set(RUDIMENTS.map((r) => r.id));
 
@@ -144,7 +145,7 @@ function Progress() {
                 <>
                   <h2 className="mt-10 text-xl font-semibold">Minutos por dia</h2>
                   <ChartContainer config={chartConfig} className="mt-3 h-56 w-full rounded-2xl border bg-card p-3">
-                    <BarChart data={series.map((d) => ({ ...d, label: new Date(d.day + "T12:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) }))}>
+                    <BarChart data={series.map((d) => ({ ...d, label: formatDayMonth(d.day) }))}>
                       <CartesianGrid vertical={false} />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
                       <YAxis width={32} tickLine={false} axisLine={false} />
