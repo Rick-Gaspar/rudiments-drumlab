@@ -63,7 +63,7 @@ function Progress() {
     if (!f) return;
     const r = parseBackup(await f.text(), validIds);
     if (fileRef.current) fileRef.current.value = "";
-    if (!r.ok) return toast.error(r.error);
+    if (!r.ok) { toast.error(r.error); return; }
     setPending(planImport(all, r.sessions));
   };
   const doImport = async () => {

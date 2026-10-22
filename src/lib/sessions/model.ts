@@ -159,9 +159,9 @@ export function dayKey(d: Date | string) {
 
 export interface SessionFilter {
   /** Inclusive local dates YYYY-MM-DD. */
-  from?: string;
-  to?: string;
-  rudimentId?: string;
+  from?: string | undefined;
+  to?: string | undefined;
+  rudimentId?: string | undefined;
 }
 
 export function filterSessions(sessions: readonly PracticeSession[], f: SessionFilter) {

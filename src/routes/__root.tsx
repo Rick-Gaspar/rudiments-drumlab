@@ -11,6 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { AppNav } from "@/components/app-nav";
+import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -126,6 +127,7 @@ function RootComponent() {
       <AppNav />
       <main className="min-h-screen pb-20 md:pb-0 md:pl-60">
         <Outlet />
+        <Toaster />
       </main>
     </QueryClientProvider>
   );
