@@ -11,9 +11,12 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { AppNav } from "@/components/app-nav";
+import { InstallPrompt } from "@/components/install-prompt";
+import { OfflineIndicator } from "@/components/offline-indicator";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { registerAppSw } from "../lib/pwa/register-sw";
 
 function NotFoundComponent() {
   return (
@@ -21,9 +24,7 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Página não encontrada</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          A página que você procura não existe.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">A página que você procura não existe.</p>
         <div className="mt-6">
           <Link
             to="/"
@@ -81,15 +82,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Rudiment Lab" },
-      { name: "description", content: "Aprenda e pratique os 40 rudimentos essenciais de bateria." },
+      {
+        name: "description",
+        content: "Aprenda e pratique os 40 rudimentos essenciais de bateria.",
+      },
       { name: "theme-color", content: "#1c1d21" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Rudiment Lab" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -121,14 +131,20 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    void registerAppSw();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AppNav />
+      <OfflineIndicator />
       <main className="min-h-screen pb-20 md:pb-0 md:pl-60">
         <Outlet />
         <Toaster />
       </main>
+      <InstallPrompt />
     </QueryClientProvider>
   );
 }

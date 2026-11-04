@@ -1,0 +1,32 @@
+{
+  "name": "Rudiment Lab",
+  "short_name": "Rudiment Lab",
+  "description": "Aprenda e pratique os 40 rudimentos essenciais de bateria com metrônomo, notação e registro de sessões.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#1c1d21",
+  "background_color": "#1c1d21",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
