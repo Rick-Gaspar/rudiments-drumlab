@@ -7,3 +7,4 @@
 - [ ] Cache de fontes Google e navegação NetworkFirst; dados do usuário fora do cache
 - [ ] Build de produção, typecheck, lint, testes; inspecionar manifest/sw gerados
 - [ ] Testar build de produção (offline, metronomo, sessões) e relatório de prontidão
+- [ ] Testes de página: datas pt-BR em Progresso, histórico e sessão em vários fusos

@@ -25,7 +25,9 @@ export default defineConfig({
         manifest: false,
         devOptions: { enabled: false },
         workbox: {
-          globPatterns: ["**/*.{js,css,html,png,ico,webmanifest}"],
+          globPatterns: ["client/**/*.{js,css,png,ico,webmanifest}"],
+          // Files are emitted under dist/client but served from the site root.
+          modifyURLPrefix: { "client/": "/" },
           // Never let the SW handle OAuth callbacks.
           navigateFallbackDenylist: [/^\/~oauth/],
           runtimeCaching: [

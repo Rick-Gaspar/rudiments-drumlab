@@ -57,6 +57,9 @@ export async function registerAppSw(): Promise<void> {
     await unregisterAppSw();
     return;
   }
-  const { registerSW } = await import("virtual:pwa-register");
-  registerSW({ immediate: true });
+  try {
+    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+  } catch (e) {
+    console.warn("Não foi possível ativar o modo offline:", e);
+  }
 }
