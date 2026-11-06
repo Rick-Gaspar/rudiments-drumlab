@@ -28,8 +28,10 @@ export default defineConfig({
           globPatterns: ["client/**/*.{js,css,png,ico,webmanifest}"],
           // Files are emitted under dist/client but served from the site root.
           modifyURLPrefix: { "client/": "/" },
-          // Never let the SW handle OAuth callbacks.
-          navigateFallbackDenylist: [/^\/~oauth/],
+          // SSR app: there is no static index.html to fall back to, so disable
+          // the navigation fallback; the NetworkFirst route below serves
+          // visited pages from cache when offline.
+          navigateFallback: null,
           runtimeCaching: [
             {
               // Navigations: network first, cached shell as fallback (offline support).
