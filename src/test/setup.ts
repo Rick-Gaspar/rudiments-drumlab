@@ -5,6 +5,15 @@ Object.defineProperty(window, "scrollTo", {
   value: () => {},
 });
 
+// Recharts' ResponsiveContainer needs ResizeObserver, which jsdom lacks.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+Object.defineProperty(window, "ResizeObserver", { writable: true, value: ResizeObserverStub });
+Object.defineProperty(globalThis, "ResizeObserver", { writable: true, value: ResizeObserverStub });
+
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
