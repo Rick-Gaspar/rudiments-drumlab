@@ -161,7 +161,8 @@ function ev(seq: string, duration: "8" | "16"): RhythmicEvent[] {
 }
 
 /** Verified patterns only. Rudiments absent here stay "pending". */
-const VERIFIED: Record<string, Omit<NotationData, "source">> = {
+const REVIEW = "Transcrito do padrão PAS — aguardando revisão com a folha oficial";
+const VERIFIED: Record<string, Omit<NotationData, "source"> & { source?: string }> = {
   "single-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R L R L R L R L", "16") },
   "double-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R R L L R R L L", "16") },
   "single-paradiddle": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">R L R R >L R L L", "16") },
@@ -170,6 +171,14 @@ const VERIFIED: Record<string, Omit<NotationData, "source">> = {
   "flam-accent": { timeSignature: "6/8", measures: 1, beamGroup: 3, events: ev(">lR L R >rL R L", "8") },
   "flam-tap": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">lR R >rL L >lR R >rL L", "16") },
   "flam-paradiddle": { timeSignature: "4/4", measures: 1, beamGroup: 4, events: ev(">lR L R R >rL R L L >lR L R R >rL R L L", "16") },
+  // Batch 2 — transcribed from the PAS standard, awaiting the user's review against their sheet.
+  "double-paradiddle": { timeSignature: "6/8", measures: 1, beamGroup: 6, events: ev(">R L R L R R >L R L R L L", "16"), source: REVIEW },
+  "paradiddle-diddle": { timeSignature: "6/8", measures: 1, beamGroup: 6, events: ev(">R L R R L L >R L R R L L", "16"), source: REVIEW },
+  "single-flammed-mill": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">lR R L R >rL L R L", "16"), source: REVIEW },
+  "flam-paradiddle-diddle": { timeSignature: "6/8", measures: 1, beamGroup: 6, events: ev(">lR L R R L L >rL R L L R R", "16"), source: REVIEW },
+  pataflafla: { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("lR L R rL lR L R rL", "16"), source: REVIEW },
+  "swiss-army-triplet": { timeSignature: "6/8", measures: 1, beamGroup: 3, events: ev(">lR R L >lR R L", "8"), source: REVIEW },
+  "inverted-flam-tap": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">lR L >rL R >lR L >rL R", "16"), source: REVIEW },
 };
 
 export function stickingOf(n: NotationData) {
@@ -195,7 +204,7 @@ function slugify(name: string) {
 export const RUDIMENTS: readonly Rudiment[] = NAMES.map((name, i) => {
   const id = slugify(name);
   const v = VERIFIED[id];
-  const notation: NotationData | null = v ? { ...v, source: PAS_SHEET } : null;
+  const notation: NotationData | null = v ? { ...v, source: v.source ?? PAS_SHEET } : null;
   return {
   id,
   order: i + 1,
