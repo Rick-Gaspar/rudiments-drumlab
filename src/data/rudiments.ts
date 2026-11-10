@@ -15,12 +15,25 @@ export type Hand = "R" | "L";
 /** One rhythmic event of a rudiment cycle. `beats` is the length in quarter notes. */
 export interface RhythmicEvent {
   hand: Hand;
-  /** VexFlow duration code ("8" | "16"). */
-  duration: "8" | "16";
+  /** VexFlow duration code. */
+  duration: Duration;
   beats: number;
   accent?: boolean;
   /** Grace-note hand for flams (played just before the main stroke). */
   flamGrace?: Hand;
+  /** Hand playing the two drag (ruff) grace notes before the main stroke. */
+  drag?: Hand;
+  /** Multiple-bounce (buzz) stroke, drawn with a tremolo mark. */
+  buzz?: boolean;
+}
+
+export type Duration = "4" | "8" | "16" | "32";
+const BEATS: Record<Duration, number> = { "4": 1, "8": 0.5, "16": 0.25, "32": 0.125 };
+
+/** Grace prefix shown before the hand letter: "l" (flam), "ll" (drag) or "". */
+export function graceLabel(e: RhythmicEvent) {
+  if (e.drag) return e.drag.toLowerCase().repeat(2);
+  return e.flamGrace ? e.flamGrace.toLowerCase() : "";
 }
 
 export interface NotationData {
@@ -148,15 +161,27 @@ const STUDY_SLUGS: string[] = [
 
 const PAS_SHEET = "PAS International Drum Rudiments (40 Essential), standard notation";
 
-function ev(seq: string, duration: "8" | "16"): RhythmicEvent[] {
-  // seq tokens: "R", "L", ">R" (accent), "lR" (flam with left grace), ">lR"
-  const beats = duration === "16" ? 0.25 : 0.5;
+function ev(seq: string, defaultDuration: Duration): RhythmicEvent[] {
+  // tokens: "R", ">R" (accent), "~R" (buzz), "lR" (flam), "llR" (drag), optional ":32" duration suffix
   return seq.split(" ").map((t) => {
-    const accent = t.startsWith(">");
-    const core = accent ? t.slice(1) : t;
+    const [body, dur] = t.split(":") as [string, Duration | undefined];
+    const duration = dur ?? defaultDuration;
+    let core = body;
+    const accent = core.startsWith(">");
+    if (accent) core = core.slice(1);
+    const buzz = core.startsWith("~");
+    if (buzz) core = core.slice(1);
     const hand = core[core.length - 1] as Hand;
-    const grace = core.length === 2 ? (core[0]!.toUpperCase() as Hand) : undefined;
-    return { hand, duration, beats, ...(accent ? { accent } : {}), ...(grace ? { flamGrace: grace } : {}) };
+    const g = core.slice(0, -1).toUpperCase() as Hand | "LL" | "RR" | "";
+    return {
+      hand,
+      duration,
+      beats: BEATS[duration],
+      ...(accent ? { accent } : {}),
+      ...(buzz ? { buzz } : {}),
+      ...(g.length === 1 ? { flamGrace: g as Hand } : {}),
+      ...(g.length === 2 ? { drag: g[0] as Hand } : {}),
+    };
   });
 }
 
@@ -178,11 +203,18 @@ const VERIFIED: Record<string, Omit<NotationData, "source"> & { source?: string 
   "flam-paradiddle-diddle": { timeSignature: "6/8", measures: 1, beamGroup: 6, events: ev(">lR L R R L L >rL R L L R R", "16"), source: REVIEW },
   pataflafla: { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("lR L R rL lR L R rL", "16"), source: REVIEW },
   "swiss-army-triplet": { timeSignature: "6/8", measures: 1, beamGroup: 3, events: ev(">lR R L >lR R L", "8"), source: REVIEW },
+  // Batch 3 — rolls and drags using the new duration/drag/buzz support (awaiting review).
+  "multiple-bounce-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("~R ~L ~R ~L ~R ~L ~R ~L", "16"), source: REVIEW },
+  "five-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R:32 R:32 L:32 L:32 >R:8 L:32 L:32 R:32 R:32 >L:8", "32"), source: REVIEW },
+  flamacue: { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("lR >L R L lR:4", "16"), source: REVIEW },
+  "drag-ruff": { timeSignature: "2/4", measures: 1, beamGroup: 1, events: ev("llR rrL", "4"), source: REVIEW },
+  "single-drag-tap": { timeSignature: "2/4", measures: 1, beamGroup: 2, events: ev("llR >L rrL >R", "8"), source: REVIEW },
+  "lesson-25": { timeSignature: "2/4", measures: 1, beamGroup: 3, events: ev("llR:16 L:16 >R rrL:16 R:16 >L", "8"), source: REVIEW },
   "inverted-flam-tap": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">lR L >rL R >lR L >rL R", "16"), source: REVIEW },
 };
 
 export function stickingOf(n: NotationData) {
-  return n.events.map((e) => (e.flamGrace ? e.flamGrace.toLowerCase() : "") + e.hand).join(" ");
+  return n.events.map((e) => graceLabel(e) + e.hand).join(" ");
 }
 
 function familyFor(order: number): RudimentFamily {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { NotationData } from "@/data/rudiments";
+import { graceLabel, type NotationData } from "@/data/rudiments";
 import { cn } from "@/lib/utils";
 
 /** Renders verified notation with VexFlow (loaded client-side only). */
@@ -11,7 +11,10 @@ export function NotationView({ notation, className }: { notation: NotationData; 
     let cancelled = false;
     (async () => {
       try {
-        const VF = await import("vexflow");
+        const mod = await import("vexflow");
+        // The CJS build only exposes some classes as named exports; merge the namespaces.
+        const anyMod = mod as unknown as Record<string, Record<string, unknown> | undefined>;
+        const VF = { ...anyMod["default"], ...anyMod["default"]?.["Flow"] as object, ...mod } as typeof mod;
         const el = ref.current;
         if (!el || cancelled) return;
         el.innerHTML = "";
@@ -28,21 +31,24 @@ export function NotationView({ notation, className }: { notation: NotationData; 
         const notes = evs.map((e) => {
           const n = new VF.StaveNote({ keys: ["c/5"], duration: e.duration, stem_direction: 1 });
           if (e.accent) n.addModifier(new VF.Articulation("a>").setPosition(VF.Modifier.Position.ABOVE), 0);
+          if (e.buzz) n.addModifier(new VF.Tremolo(3), 0);
           if (e.flamGrace) {
             const g = new VF.GraceNote({ keys: ["c/5"], duration: "8", slash: true, stem_direction: 1 });
             n.addModifier(new VF.GraceNoteGroup([g], false), 0);
+          } else if (e.drag) {
+            const gs = [0, 1].map(() => new VF.GraceNote({ keys: ["c/5"], duration: "16", stem_direction: 1 }));
+            n.addModifier(new VF.GraceNoteGroup(gs, false).beamNotes(), 0);
           }
-          const label = (e.flamGrace ? e.flamGrace.toLowerCase() : "") + e.hand;
+          const label = graceLabel(e) + e.hand;
           n.addModifier(
             new VF.Annotation(label).setFont("JetBrains Mono, monospace", 13, "bold").setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM),
             0,
           );
           return n;
         });
-        const beams: InstanceType<typeof VF.Beam>[] = [];
-        for (let i = 0; i < notes.length; i += notation.beamGroup) {
-          beams.push(new VF.Beam(notes.slice(i, i + notation.beamGroup)));
-        }
+        // Beam by beat (or dotted quarter in 6/8) so mixed durations group correctly.
+        const groups = den === 8 ? [new VF.Fraction(3, 8)] : [new VF.Fraction(1, 4)];
+        const beams = VF.Beam.generateBeams(notes, { groups, stem_direction: 1 });
         const voice = new VF.Voice({ num_beats: num * notation.measures, beat_value: den }).setStrict(false);
         voice.addTickables(notes);
         new VF.Formatter().joinVoices([voice]).format([voice], width - 110);

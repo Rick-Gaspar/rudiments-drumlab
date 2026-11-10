@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Clock, Flag, Pause, Play, RotateCcw } from "lucide-react";
-import { getRudiment } from "@/data/rudiments";
+import { getRudiment, graceLabel } from "@/data/rudiments";
 import { FamilyBadge } from "@/components/rudiment-badges";
 import { NotationView } from "@/components/notation-view";
 import { MetronomePanel, useMetronome } from "@/components/practice/metronome-panel";
@@ -142,7 +142,8 @@ function PracticeArea({ r, notation }: { r: Rudiment; notation: NotationData }) 
                   demo.snap.index === i && "bg-primary text-primary-foreground",
                 )}
               >
-                {e.flamGrace && <sup className="mr-0.5 text-[10px] font-normal">{e.flamGrace.toLowerCase()}</sup>}
+                {graceLabel(e) && <sup className="mr-0.5 text-[10px] font-normal">{graceLabel(e)}</sup>}
+                {e.buzz && <span className="mr-0.5 text-[10px] font-normal">~</span>}
                 {e.hand}
               </span>
             ))}

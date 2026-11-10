@@ -11,6 +11,7 @@ export interface DemoSnapshot {
 }
 
 const FLAM_OFFSET = 0.03;
+const DRAG_GAP = 0.035;
 
 let active: DemoPlayer | null = null;
 
@@ -77,8 +78,21 @@ export class DemoPlayer {
       const idx = this.i % evs.length;
       const e = evs[idx]!;
       const pan = e.hand === "R" ? 0.25 : -0.25;
-      if (e.flamGrace) scheduleStroke(c, this.bus!.node, Math.max(c.currentTime, this.nextTime - FLAM_OFFSET), 0.3, -pan);
-      scheduleStroke(c, this.bus!.node, this.nextTime, e.accent ? 1 : 0.55, pan);
+      const at = (t: number) => Math.max(c.currentTime, t);
+      if (e.flamGrace) scheduleStroke(c, this.bus!.node, at(this.nextTime - FLAM_OFFSET), 0.3, -pan);
+      if (e.drag) {
+        const gp = e.drag === "R" ? 0.25 : -0.25;
+        scheduleStroke(c, this.bus!.node, at(this.nextTime - 2 * DRAG_GAP), 0.28, gp);
+        scheduleStroke(c, this.bus!.node, at(this.nextTime - DRAG_GAP), 0.28, gp);
+      }
+      const dur = e.beats * quarter;
+      if (e.buzz) {
+        // Multiple-bounce: a quick decaying series of soft strokes across the note.
+        const n = Math.max(3, Math.round(dur / 0.03));
+        for (let k = 0; k < n; k++) scheduleStroke(c, this.bus!.node, this.nextTime + (k * dur) / n, (e.accent ? 0.8 : 0.45) * (1 - k / (n * 1.5)), pan);
+      } else {
+        scheduleStroke(c, this.bus!.node, this.nextTime, e.accent ? 1 : 0.55, pan);
+      }
       this.queue.push({ time: this.nextTime, index: idx });
       this.nextTime += e.beats * quarter;
       this.i++;
