@@ -77,6 +77,12 @@ export class DemoPlayer {
     while (this.nextTime < until) {
       const idx = this.i % evs.length;
       const e = evs[idx]!;
+      if (e.rest) {
+        this.queue.push({ time: this.nextTime, index: idx });
+        this.nextTime += e.beats * quarter;
+        this.i++;
+        continue;
+      }
       const pan = e.hand === "R" ? 0.25 : -0.25;
       const at = (t: number) => Math.max(c.currentTime, t);
       if (e.flamGrace) scheduleStroke(c, this.bus!.node, at(this.nextTime - FLAM_OFFSET), 0.3, -pan);

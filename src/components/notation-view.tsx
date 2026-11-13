@@ -30,6 +30,7 @@ export function NotationView({ notation, className }: { notation: NotationData; 
         stave.setContext(ctx).draw();
 
         const notes = evs.map((e) => {
+          if (e.rest) return new VF.StaveNote({ keys: ["b/4"], duration: `${e.duration}r` });
           const n = new VF.StaveNote({ keys: ["c/5"], duration: e.duration, stem_direction: 1 });
           if (e.accent) n.addModifier(new VF.Articulation("a>").setPosition(VF.Modifier.Position.ABOVE), 0);
           if (e.buzz) n.addModifier(new VF.Tremolo(3), 0);
@@ -47,6 +48,16 @@ export function NotationView({ notation, className }: { notation: NotationData; 
           );
           return n;
         });
+        // Group consecutive triplet events into 3-note tuplets.
+        const tuplets: InstanceType<typeof VF.Tuplet>[] = [];
+        let run: typeof notes = [];
+        evs.forEach((e, i) => {
+          if (e.triplet) run.push(notes[i]!);
+          if (run.length === 3 || (!e.triplet && run.length)) {
+            if (run.length === 3) tuplets.push(new VF.Tuplet(run, { bracketed: false }));
+            run = [];
+          }
+        });
         // Beam by beat (or dotted quarter in 6/8) so mixed durations group correctly.
         const groups = den === 8 ? [new VF.Fraction(3, 8)] : [new VF.Fraction(1, 4)];
         const beams = VF.Beam.generateBeams(notes, { groups, stem_direction: 1 });
@@ -55,6 +66,7 @@ export function NotationView({ notation, className }: { notation: NotationData; 
         new VF.Formatter().joinVoices([voice]).format([voice], width - 110);
         voice.draw(ctx, stave);
         beams.forEach((b) => b.setContext(ctx).draw());
+        tuplets.forEach((t) => t.setContext(ctx).draw());
         const svg = el.querySelector("svg");
         svg?.setAttribute("role", "img");
         svg?.setAttribute("aria-label", "Partitura do rudimento");

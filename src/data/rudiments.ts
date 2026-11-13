@@ -25,6 +25,10 @@ export interface RhythmicEvent {
   drag?: Hand;
   /** Multiple-bounce (buzz) stroke, drawn with a tremolo mark. */
   buzz?: boolean;
+  /** Silent event (hand is ignored). */
+  rest?: boolean;
+  /** Part of a 3-in-the-space-of-2 tuplet; `beats` already scaled by 2/3. */
+  triplet?: boolean;
 }
 
 export type Duration = "4" | "8" | "16" | "32";
@@ -161,11 +165,16 @@ const STUDY_SLUGS: string[] = [
 
 const PAS_SHEET = "PAS International Drum Rudiments (40 Essential), standard notation";
 
-function ev(seq: string, defaultDuration: Duration): RhythmicEvent[] {
+function ev(seq: string, defaultDuration: Duration | `${Duration}t`): RhythmicEvent[] {
   // tokens: "R", ">R" (accent), "~R" (buzz), "lR" (flam), "llR" (drag), optional ":32" duration suffix
+  // "_" = rest, ":16t" = triplet sixteenth
   return seq.split(" ").map((t) => {
-    const [body, dur] = t.split(":") as [string, Duration | undefined];
-    const duration = dur ?? defaultDuration;
+    const [body, rawDur] = t.split(":") as [string, string | undefined];
+    const durTok = rawDur ?? defaultDuration;
+    const triplet = durTok.endsWith("t");
+    const duration = durTok.replace("t", "") as Duration;
+    const beats = BEATS[duration] * (triplet ? 2 / 3 : 1);
+    if (body === "_") return { hand: "R" as Hand, duration, beats, rest: true, ...(triplet ? { triplet } : {}) };
     let core = body;
     const accent = core.startsWith(">");
     if (accent) core = core.slice(1);
@@ -176,7 +185,8 @@ function ev(seq: string, defaultDuration: Duration): RhythmicEvent[] {
     return {
       hand,
       duration,
-      beats: BEATS[duration],
+      beats,
+      ...(triplet ? { triplet } : {}),
       ...(accent ? { accent } : {}),
       ...(buzz ? { buzz } : {}),
       ...(g.length === 1 ? { flamGrace: g as Hand } : {}),
@@ -211,10 +221,30 @@ const VERIFIED: Record<string, Omit<NotationData, "source"> & { source?: string 
   "single-drag-tap": { timeSignature: "2/4", measures: 1, beamGroup: 2, events: ev("llR >L rrL >R", "8"), source: REVIEW },
   "lesson-25": { timeSignature: "2/4", measures: 1, beamGroup: 3, events: ev("llR:16 L:16 >R rrL:16 R:16 >L", "8"), source: REVIEW },
   "inverted-flam-tap": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">lR L >rL R >lR L >rL R", "16"), source: REVIEW },
+  // Batch 4 — triplets and rests (awaiting review).
+  "single-stroke-four": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R:16t L:16t R:16t >L:8 L:16t R:16t L:16t >R:8", "16"), source: REVIEW },
+  "single-stroke-seven": { timeSignature: "2/4", measures: 1, beamGroup: 6, events: ev("R L R L R L >R:4", "16t"), source: REVIEW },
+  "triple-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 3, events: ev("R R R L L L R R R L L L", "16t"), source: REVIEW },
+  "six-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">R:16 L L R R >L:16 >R:16 L L R R >L:16", "32"), source: REVIEW },
+  "seven-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R R L L R R >L:16 L L R R L L >R:16", "32"), source: REVIEW },
+  "nine-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R R L L R R L L >R:8 _:8", "32"), source: REVIEW },
+  "ten-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R R L L R R L L >R:8 >L:8", "32"), source: REVIEW },
+  "eleven-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R R L L R R L L R R >L:8 _:16", "32"), source: REVIEW },
+  "thirteen-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R R L L R R L L R R L L >R:16 _:16", "32"), source: REVIEW },
+  "fifteen-stroke-roll": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("R R L L R R L L R R L L R R >L:16", "32"), source: REVIEW },
+  "seventeen-stroke-roll": { timeSignature: "4/4", measures: 1, beamGroup: 4, events: ev("R R L L R R L L R R L L R R L L >R:4 _:4", "32"), source: REVIEW },
+  "flam-drag": { timeSignature: "6/8", measures: 1, beamGroup: 4, events: ev(">lR:8 L:16 L:16 R:8 >rL:8 R:16 R:16 L:8", "16"), source: REVIEW },
+  "double-drag-tap": { timeSignature: "6/8", measures: 1, beamGroup: 3, events: ev("llR llR >L rrL rrL >R", "8"), source: REVIEW },
+  "single-dragadiddle": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev(">llR L R R >rrL R L L", "16"), source: REVIEW },
+  "drag-paradiddle-1": { timeSignature: "6/8", measures: 1, beamGroup: 4, events: ev(">R:8 llR L R R >L:8 rrL R L L", "16"), source: REVIEW },
+  "drag-paradiddle-2": { timeSignature: "6/8", measures: 1, beamGroup: 6, events: ev(">R llR llR L R R >L rrL rrL R L L", "16"), source: REVIEW },
+  "single-ratamacue": { timeSignature: "2/4", measures: 1, beamGroup: 4, events: ev("llR:16t L:16t R:16t >L:8 rrL:16t R:16t L:16t >R:8", "16"), source: REVIEW },
+  "double-ratamacue": { timeSignature: "4/4", measures: 1, beamGroup: 4, events: ev("llR:8 llR:16t L:16t R:16t >L:4 rrL:8 rrL:16t R:16t L:16t >R:4", "8"), source: REVIEW },
+  "triple-ratamacue": { timeSignature: "4/4", measures: 1, beamGroup: 4, events: ev("llR:16 llR:16 llR:16t L:16t R:16t >L:4 rrL:16 rrL:16 rrL:16t R:16t L:16t >R:4", "8"), source: REVIEW },
 };
 
 export function stickingOf(n: NotationData) {
-  return n.events.map((e) => graceLabel(e) + e.hand).join(" ");
+  return n.events.filter((e) => !e.rest).map((e) => graceLabel(e) + e.hand).join(" ");
 }
 
 function familyFor(order: number): RudimentFamily {

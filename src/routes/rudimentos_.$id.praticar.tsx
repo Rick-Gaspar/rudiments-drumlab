@@ -137,19 +137,20 @@ function PracticeArea({ r, notation }: { r: Rudiment; notation: NotationData }) 
                 key={i}
                 className={cn(
                   "flex h-10 min-w-10 items-center justify-center rounded-md border px-2 font-mono text-sm font-bold",
-                  e.hand === "R" ? "text-family-rolls" : "text-family-drags",
+                  e.rest ? "text-muted-foreground" : e.hand === "R" ? "text-family-rolls" : "text-family-drags",
+                  e.triplet && "border-dashed",
                   e.accent && "border-primary",
                   demo.snap.index === i && "bg-primary text-primary-foreground",
                 )}
               >
                 {graceLabel(e) && <sup className="mr-0.5 text-[10px] font-normal">{graceLabel(e)}</sup>}
                 {e.buzz && <span className="mr-0.5 text-[10px] font-normal">~</span>}
-                {e.hand}
+                {e.rest ? "–" : e.hand}
               </span>
             ))}
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            Acentos (&gt;) em destaque · letra pequena = nota de flam · Fonte: {notation.source}
+            Acentos (&gt;) em destaque · letra pequena = nota de enfeite · borda tracejada = tercina · – = pausa · Fonte: {notation.source}
           </p>
         </section>
         <DemoPanel {...demo} />
