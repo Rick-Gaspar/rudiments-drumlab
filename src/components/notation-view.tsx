@@ -13,8 +13,9 @@ export function NotationView({ notation, className }: { notation: NotationData; 
       try {
         const mod = await import("vexflow");
         // The CJS build only exposes some classes as named exports; merge the namespaces.
-        const anyMod = mod as unknown as Record<string, Record<string, unknown> | undefined>;
-        const VF = { ...anyMod["default"], ...anyMod["default"]?.["Flow"] as object, ...mod } as typeof mod;
+        const anyMod = mod as unknown as Record<string, { Flow?: object } | undefined>;
+        const flow = anyMod["Vex"]?.Flow ?? anyMod["default"]?.Flow ?? {};
+        const VF = { ...flow, ...mod } as typeof mod;
         const el = ref.current;
         if (!el || cancelled) return;
         el.innerHTML = "";
